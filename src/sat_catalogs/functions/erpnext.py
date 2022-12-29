@@ -95,17 +95,30 @@ def get_product_service_keys(db_path: str, *args) -> str:
         str: JSON string
     """
     records = get_record_scalars(SatModel.PROD_SERV_KEY, db_path)
-    values = [
-        {
-            "description": record.texto,
-            "doctype": "SAT Product or Service Key",
-            "enabled": 1,
-            "key": record.id,
-            "key_name": f"{record.id} - {record.texto}"[:140],
-            "name": record.id,
-        }
-        for record in records
-    ]
+
+    values = []
+    for record in records:
+
+        if record.id.endswith("00"):
+            is_group = 1
+            parent = None
+        else:
+            is_group = 0
+            parent = record.id[:6] + "00"
+
+        values.append(
+            {
+                "description": record.texto,
+                "doctype": "SAT Product or Service Key",
+                "enabled": 1,
+                "is_group": is_group,
+                "key": record.id,
+                "key_name": f"{record.id} - {record.texto}"[:140],
+                "name": record.id,
+                "old_parent": None,
+                "parent_sat_product_or_service_key": parent,
+            }
+        )
 
     return scripts.get_json(values)
 
