@@ -94,11 +94,10 @@ def get_product_service_keys(db_path: str, *args) -> str:
     Returns:
         str: JSON string
     """
-    records = get_record_scalars(SatModel.PROD_SERV_KEY, db_path)
+    records = get_record_scalars(SatModel.PROD_SERV_KEY, db_path, "id")
 
     values = []
     for record in records:
-
         if record.id.endswith("00"):
             is_group = 1
             parent = None
