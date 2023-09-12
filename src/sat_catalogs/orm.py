@@ -1,8 +1,9 @@
 """Database interactions"""
 
 from enum import Enum
+
 from sqlalchemy import Table, select
-from sqlalchemy.engine import Engine, create_engine, ScalarResult
+from sqlalchemy.engine import Engine, ScalarResult, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session
 
@@ -29,7 +30,7 @@ def get_db_engine(db_path: str) -> Engine:
     Returns:
         Engine: Connection to database
     """
-    return create_engine(f"sqlite:///{db_path}", echo=False, future=True)
+    return create_engine(f"sqlite:///{db_path}", echo=True, future=True)
 
 
 def get_model(model: SatModel, engine: Engine):
@@ -54,12 +55,15 @@ def get_model(model: SatModel, engine: Engine):
     return Model
 
 
-def get_record_scalars(model: SatModel, db_path: str) -> ScalarResult:
+def get_record_scalars(
+    model: SatModel, db_path: str, order_by: str = None
+) -> ScalarResult:
     """Connect to database and retrieve results as scalars
 
     Args:
         model (SatModel): Model of the object to retrieve
         db_path (str): Path to SQLite database
+        order_by (str, optional): Column name to order by. Defaults to None.
 
     Returns:
         ScalarResult: All table record objects
@@ -69,4 +73,6 @@ def get_record_scalars(model: SatModel, db_path: str) -> ScalarResult:
     session = Session(engine)
     model_class = get_model(model, engine)
     query = select(model_class)
+    if order_by:
+        query = query.order_by(order_by)
     return session.scalars(query)
