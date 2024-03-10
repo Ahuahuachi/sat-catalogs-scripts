@@ -1,17 +1,14 @@
 """Main entry point"""
+
+import bz2
 import os
-import sqlite3
-from shutil import rmtree
-from tempfile import NamedTemporaryFile
-from zipfile import ZipFile
 
 import click
 from requests import get
 
-from . import files
 from .functions.dolibarr import get_dolibarr_function
-from .functions.odoo import get_odoo_function
 from .functions.erpnext import get_erpnext_function
+from .functions.odoo import get_odoo_function
 from .orm import SatModel
 
 
@@ -91,33 +88,27 @@ def export(context: click.Context, database: str, system: str, model: str, outpu
 def build_database(db_path: str, overwrite: bool):
     """Download and build latest SAT's catalogs database"""
 
-    click.echo("⇩ Downloading repository...")
-    url = "https://github.com/phpcfdi/resources-sat-catalogs/archive/master.zip"
+    if os.path.exists(db_path) and not overwrite:
+        msg = (
+            f"Database file {db_path} already exists. "
+            "If you want to overwrite it use the --overwrite option."
+        )
+        raise click.ClickException(msg)
+
+    click.echo("⇩ Downloading file...")
+    url = (
+        "https://github.com/phpcfdi/resources-sat-catalogs/releases/latest/download/"
+        "catalogs.db.bz2"
+    )
     request = get(url, timeout=60)
 
-    with NamedTemporaryFile() as temp_file:
-        temp_file.write(request.content)
+    click.echo("📦 Extracting database...")
+    db = bz2.decompress(request.content)
 
-        with ZipFile(temp_file.name, "r") as zip_file:
-            database_dir = "resources-sat-catalogs-master/database/"
-            tmp_dir = "tmp/"
-            namelist = zip_file.namelist()
-            members = [name for name in namelist if name.startswith(database_dir)]
-            click.echo("📦 Extracting files...")
-            zip_file.extractall(tmp_dir, members)
-
-    click.echo("🏗️ Building database...")
-    if overwrite and os.path.exists(db_path):
+    if os.path.exists(db_path) and overwrite:
         os.unlink(db_path)
 
-    connection = sqlite3.connect(db_path)
-    cursor = connection.cursor()
+    with open(db_path, "wb") as file:
+        file.write(db)
 
-    sql_script = files.cat_files(tmp_dir + database_dir + "schemas/")
-    sql_script += files.cat_files(tmp_dir + database_dir + "data/")
-
-    cursor.executescript(sql_script)
-    connection.close()
-    click.echo("🆑 Removing temporary files...")
-    rmtree(tmp_dir)
-    click.echo("✔ Done!")
+    click.echo(f"✔ Done! Database file saved at {db_path}")
