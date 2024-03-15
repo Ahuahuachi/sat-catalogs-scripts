@@ -13,7 +13,7 @@ Base = declarative_base()
 class SatModel(Enum):
     """Table names for models"""
 
-    FORM_OF_PAYMENT = "cfdi_40_formas_pago"
+    PAYMENT_METHOD = "cfdi_40_formas_pago"
     UNIT_OF_MEASURE = "cfdi_40_claves_unidades"
     TAX_SYSTEM = "cfdi_40_regimenes_fiscales"
     PROD_SERV_KEY = "cfdi_40_productos_servicios"

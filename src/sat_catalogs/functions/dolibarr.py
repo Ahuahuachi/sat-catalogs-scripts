@@ -1,5 +1,7 @@
 """Dolibarr scripts generator functions"""
+
 from typing import Callable
+
 from click.exceptions import BadParameter
 
 from sat_catalogs.orm import SatModel, get_record_scalars
@@ -21,7 +23,7 @@ def get_dolibarr_function(model: SatModel) -> Callable:
     """
     function_map = {
         SatModel.CFDI_USE.name: get_cfdi_uses_sql,
-        SatModel.FORM_OF_PAYMENT.name: get_payment_forms_sql,
+        SatModel.PAYMENT_METHOD.name: get_payment_forms_sql,
         SatModel.TAX_SYSTEM.name: get_tax_systems_sql,
         SatModel.PROD_SERV_KEY.name: get_product_service_keys_sql,
         SatModel.UNIT_OF_MEASURE.name: get_units_of_measure_sql,
@@ -64,7 +66,7 @@ def get_payment_forms_sql(db_path: str, templates_path: str) -> str:
     Returns:
         str: SQL script
     """
-    records = get_record_scalars(SatModel.FORM_OF_PAYMENT, db_path)
+    records = get_record_scalars(SatModel.PAYMENT_METHOD, db_path)
 
     values = []
     for rowid, record in enumerate(records, 1):

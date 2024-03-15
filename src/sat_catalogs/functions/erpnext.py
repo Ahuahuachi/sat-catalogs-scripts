@@ -1,5 +1,7 @@
 """ERP Next fixtures generator functions"""
+
 from typing import Callable
+
 from click.exceptions import BadParameter
 
 from sat_catalogs.orm import SatModel, get_record_scalars
@@ -21,7 +23,7 @@ def get_erpnext_function(model: SatModel) -> Callable:
     """
 
     function_map = {
-        SatModel.FORM_OF_PAYMENT.name: get_ways_to_pay,
+        SatModel.PAYMENT_METHOD.name: get_ways_to_pay,
         SatModel.TAX_SYSTEM.name: get_tax_systems,
         SatModel.PROD_SERV_KEY.name: get_product_service_keys,
         SatModel.UNIT_OF_MEASURE.name: get_uom_keys,
@@ -70,7 +72,7 @@ def get_ways_to_pay(db_path: str, *args) -> str:
     Returns:
         str: JSON string
     """
-    records = get_record_scalars(SatModel.FORM_OF_PAYMENT, db_path)
+    records = get_record_scalars(SatModel.PAYMENT_METHOD, db_path)
     values = [
         {
             "description": record.texto,

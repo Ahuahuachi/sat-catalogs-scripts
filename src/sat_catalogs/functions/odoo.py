@@ -1,5 +1,7 @@
 """Odoo scripts generator functions"""
+
 from typing import Callable
+
 from click.exceptions import BadParameter
 
 from sat_catalogs.orm import SatModel, get_record_scalars
@@ -20,7 +22,7 @@ def get_odoo_function(model: SatModel) -> Callable:
         Callable: Function to call
     """
     function_map = {
-        SatModel.FORM_OF_PAYMENT.name: get_payment_forms_csv,
+        SatModel.PAYMENT_METHOD.name: get_payment_forms_csv,
         SatModel.TAX_SYSTEM.name: get_tax_systems_csv,
         SatModel.PROD_SERV_KEY.name: get_product_service_keys_csv,
         SatModel.UNIT_OF_MEASURE.name: get_units_of_measure_csv,
@@ -63,7 +65,7 @@ def get_payment_forms_csv(db_path: str, templates_path: str) -> str:
     Returns:
         str: CSV string
     """
-    records = get_record_scalars(SatModel.FORM_OF_PAYMENT, db_path)
+    records = get_record_scalars(SatModel.PAYMENT_METHOD, db_path)
 
     values = []
     for rowid, record in enumerate(records, 1):
