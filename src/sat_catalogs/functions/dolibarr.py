@@ -5,6 +5,7 @@ from typing import Callable
 from click.exceptions import BadParameter
 
 from sat_catalogs.orm import SatModel, get_record_scalars
+from sat_catalogs.template_engine import get_template
 
 from .scripts import get_sql
 
@@ -23,7 +24,7 @@ def get_dolibarr_function(model: SatModel) -> Callable:
     """
     function_map = {
         SatModel.CFDI_USE.name: get_cfdi_uses_sql,
-        SatModel.PAYMENT_METHOD.name: get_payment_forms_sql,
+        SatModel.PAYMENT_METHOD.name: get_payment_methods_sql,
         SatModel.TAX_SYSTEM.name: get_tax_systems_sql,
         SatModel.PROD_SERV_KEY.name: get_product_service_keys_sql,
         SatModel.UNIT_OF_MEASURE.name: get_units_of_measure_sql,
@@ -56,24 +57,24 @@ def get_units_of_measure_sql(db_path: str, templates_path: str) -> str:
     return get_sql(f"{templates_path}/dolibarr/units_of_measure.sql", values)
 
 
-def get_payment_forms_sql(db_path: str, templates_path: str) -> str:
-    """Returns the payment forms SQL script as string
+def get_payment_methods_sql(db_path: str, *args) -> str:
+    """Returns the payment methods SQL script as string
 
     Args:
         db_path (str): Path to the SQLite database file
-        templates_path (str): Path to the scripts template directory
 
     Returns:
         str: SQL script
     """
     records = get_record_scalars(SatModel.PAYMENT_METHOD, db_path)
+    template = get_template("dolibarr/payment_methods.sql")
 
     values = []
-    for rowid, record in enumerate(records, 1):
+    for record in records:
         name = record.texto.replace("'", '"')
-        values.append(f"    ({rowid}, '{record.id}', '{name}', 0)")
+        values.append({"code": record.id, "label": name, "active": 0})
 
-    return get_sql(f"{templates_path}/dolibarr/payment_forms.sql", values)
+    return template.render(values=values)
 
 
 def get_tax_systems_sql(db_path: str, templates_path: str) -> str:
