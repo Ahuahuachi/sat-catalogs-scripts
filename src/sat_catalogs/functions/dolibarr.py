@@ -26,7 +26,7 @@ def get_dolibarr_function(model: SatModel) -> Callable:
         SatModel.CFDI_USE.name: get_cfdi_uses_sql,
         SatModel.PAYMENT_METHOD.name: get_payment_methods_sql,
         SatModel.TAX_SYSTEM.name: get_tax_systems_sql,
-        SatModel.PROD_SERV_KEY.name: get_product_service_keys_sql,
+        SatModel.PROD_SERV_KEY.name: get_product_service_sql,
         SatModel.UNIT_OF_MEASURE.name: get_units_of_measure_sql,
         SatModel.RELATIONSHIP_TYPE.name: get_cfdi_relationships_sql,
         SatModel.PAYMENT_OPTION.name: get_payment_options_sql,
@@ -98,24 +98,24 @@ def get_tax_systems_sql(db_path: str, templates_path: str) -> str:
     return get_sql(f"{templates_path}/dolibarr/tax_systems.sql", values)
 
 
-def get_product_service_keys_sql(db_path: str, templates_path: str) -> str:
-    """Returns the products and services keys SQL script as string
+def get_product_service_sql(db_path: str, *args) -> str:
+    """Returns the products and services SQL script as string
 
     Args:
         db_path (str): Path to the SQLite database file
-        templates_path (str): Path to the scripts template directory
 
     Returns:
         str: SQL script
     """
     records = get_record_scalars(SatModel.PROD_SERV_KEY, db_path)
+    template = get_template("dolibarr/products_services.sql")
 
     values = []
-    for rowid, record in enumerate(records, 1):
+    for record in records:
         name = record.texto.replace("'", '"')
-        values.append(f"   ({rowid}, '{record.id}', '{name}', 0)")
+        values.append({"code": record.id, "label": name, "active": 0})
 
-    return get_sql(f"{templates_path}/dolibarr/product_service_keys.sql", values)
+    return template.render(values=values)
 
 
 def get_cfdi_uses_sql(db_path: str, templates_path: str) -> str:
