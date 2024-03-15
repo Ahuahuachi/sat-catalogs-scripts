@@ -29,6 +29,7 @@ def get_dolibarr_function(model: SatModel) -> Callable:
         SatModel.PROD_SERV_KEY.name: get_product_service_keys_sql,
         SatModel.UNIT_OF_MEASURE.name: get_units_of_measure_sql,
         SatModel.RELATIONSHIP_TYPE.name: get_cfdi_relationships_sql,
+        SatModel.PAYMENT_OPTION.name: get_payment_options_sql,
     }
     try:
         return function_map[model.name]
@@ -154,3 +155,23 @@ def get_cfdi_relationships_sql(db_path: str, templates_path: str) -> str:
         name = record.texto.replace("'", '"')
         values.append(f"   ({rowid}, '{record.id}', '{name}', 1)")
     return get_sql(f"{templates_path}/dolibarr/relationship_types.sql", values)
+
+
+def get_payment_options_sql(db_path: str, *args) -> str:
+    """Returns the payment options SQL script as string
+
+    Args:
+        db_path (str): Path to the SQLite database file
+
+    Returns:
+        str: SQL script
+    """
+    records = get_record_scalars(SatModel.PAYMENT_OPTION, db_path)
+    template = get_template("dolibarr/payment_options.sql")
+
+    values = []
+    for record in records:
+        name = record.texto.replace("'", '"')
+        values.append({"code": record.id, "label": name, "active": 0})
+
+    return template.render(values=values)

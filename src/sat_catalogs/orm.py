@@ -19,7 +19,7 @@ class SatModel(Enum):
     PROD_SERV_KEY = "cfdi_40_productos_servicios"
     CFDI_USE = "cfdi_40_usos_cfdi"
     RELATIONSHIP_TYPE = "cfdi_40_tipos_relaciones"
-    PAYMENT_OPTIONS = "cfdi_40_metodos_pago"
+    PAYMENT_OPTION = "cfdi_40_metodos_pago"
 
 
 def get_db_engine(db_path: str) -> Engine:
