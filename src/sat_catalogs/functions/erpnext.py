@@ -158,18 +158,29 @@ def get_cfdi_uses(db_path: str, *args) -> str:
     Returns:
         str: JSON string
     """
-    recods = get_record_scalars(SatModel.CFDI_USE, db_path)
-    values = [
-        {
-            "description": record.texto,
-            "doctype": "SAT CFDI Use",
+    records = get_record_scalars(SatModel.CFDI_USE, db_path)
+    values = []
+    doctype = "SAT CFDI Use"
+    for regime in records:
+        tax_regimes = [
+            {
+                "parent": regime.id,
+                "parentfield": "tax_regimes",
+                "parenttype": doctype,
+                "tax_regime": tr.strip(),
+            }
+            for tr in regime.regimenes_fiscales_receptores.split(",")
+        ]
+        value = {
+            "description": regime.texto,
+            "doctype": doctype,
             "enabled": 1,
-            "key": record.id,
-            "key_name": f"{record.id} - {record.texto}"[:140],
-            "name": record.id,
+            "key": regime.id,
+            "key_name": f"{regime.id} - {regime.texto}"[:140],
+            "name": regime.id,
+            "tax_regimes": tax_regimes,
         }
-        for record in recods
-    ]
+        values.append(value)
 
     return scripts.get_json(values)
 
